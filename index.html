@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test de Barreras Neurológicas al Cambio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#141225;
+    --panel:#1E1B35;
+    --panel-raised:#272242;
+    --paper:#EDEAF7;
+    --dim:#8F87AD;
+    --coral:#E8735F;
+    --teal:#4FB8A6;
+    --amber:#E0A857;
+    --red:#D9524A;
+    --hair:rgba(237,234,247,0.09);
+    --hair-strong:rgba(237,234,247,0.20);
+    --font-display:"Libre Franklin",sans-serif;
+    --font-body:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --font-mono:"IBM Plex Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 460px at 20% -8%, rgba(232,115,95,0.10), transparent 55%),
+      radial-gradient(ellipse 900px 460px at 85% 10%, rgba(79,184,166,0.10), transparent 55%),
+      var(--ink);
+    color:var(--paper);
+    font-family:var(--font-body);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--teal);color:var(--ink);}
+  button{font-family:inherit;}
+  .app{max-width:840px;margin:0 auto;padding:0 24px 130px;}
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  .topbar{position:sticky;top:0;z-index:60;background:rgba(20,18,37,0.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--hair);}
+  .topbar-inner{max-width:840px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;}
+  .brand-mark{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;white-space:nowrap;}
+  .track{flex:1;height:3px;background:var(--hair-strong);border-radius:2px;overflow:hidden;}
+  .track-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--teal));width:0%;transition:width .4s cubic-bezier(.4,0,.2,1);}
+  .track-count{font-family:var(--font-mono);font-size:12px;color:var(--dim);white-space:nowrap;min-width:44px;text-align:right;}
+
+  .hero{padding:80px 0 36px;}
+  .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;color:var(--teal);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--teal);}
+  h1.title{font-family:var(--font-display);font-weight:800;font-size:clamp(32px,6vw,52px);line-height:1.05;letter-spacing:-.01em;margin:0 0 20px;}
+  h1.title em{font-style:normal;color:var(--coral);}
+  .lede{font-size:17px;line-height:1.6;color:var(--dim);max-width:600px;margin:0 0 12px;}
+
+  .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:30px 0 8px;}
+  .role-card{border-radius:8px;padding:22px 20px;background:var(--panel);border:1px solid var(--hair-strong);cursor:pointer;transition:all .15s;text-align:left;appearance:none;color:var(--paper);}
+  .role-card:hover{border-color:var(--teal);}
+  .role-card.active{border-color:var(--teal);background:var(--panel-raised);box-shadow:0 0 0 1px var(--teal);}
+  .role-card .rc-name{font-family:var(--font-display);font-weight:700;font-size:16px;margin-bottom:6px;}
+  .role-card .rc-desc{font-size:12.5px;line-height:1.5;color:var(--dim);}
+
+  .instrument{padding:26px 0;border-top:1px solid var(--hair);}
+  .instrument .meta-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;}
+  .meta-value{font-size:14.5px;line-height:1.65;color:var(--paper);}
+  .meta-value b{color:var(--paper);font-weight:600;}
+
+  .dim-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px;}
+  .dim-mini{border-radius:6px;padding:14px 16px;background:var(--panel);border:1px solid var(--hair-strong);border-left:3px solid var(--teal);}
+  .dim-mini .dm-name{font-family:var(--font-display);font-weight:700;font-size:13.5px;margin-bottom:4px;}
+  .dim-mini .dm-desc{font-size:12px;line-height:1.5;color:var(--dim);}
+  .dim-mini .dm-refs{font-family:var(--font-mono);font-size:10px;color:var(--dim);margin-top:4px;opacity:.7;}
+
+  .warnbox{margin-top:14px;background:rgba(217,82,74,0.06);border:1px solid rgba(217,82,74,0.25);border-radius:6px;padding:16px 18px;font-size:13px;line-height:1.6;color:var(--dim);}
+  .warnbox b{color:var(--coral);}
+
+  .text-input{width:100%;background:var(--panel-raised);border:1px solid var(--hair-strong);color:var(--paper);border-radius:3px;padding:11px 14px;font-family:inherit;font-size:14px;}
+
+  .cta-row{margin-top:44px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+  .cta{appearance:none;border:none;cursor:pointer;background:var(--teal);color:var(--ink);font-family:var(--font-display);font-weight:800;letter-spacing:.01em;font-size:16px;padding:16px 32px;border-radius:2px;transition:transform .15s ease, background .15s ease;}
+  .cta:hover{background:#63cbb8;transform:translateY(-1px);}
+  .cta:active{transform:translateY(0);}
+  .cta.ghost{background:transparent;color:var(--paper);box-shadow:inset 0 0 0 1px var(--hair-strong);}
+  .cta.ghost:hover{box-shadow:inset 0 0 0 1px var(--teal);color:var(--teal);background:transparent;}
+  .cta:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+  .cta-note{font-family:var(--font-mono);font-size:12px;color:var(--dim);}
+
+  .quiz-head{padding:56px 0 18px;}
+  .dim-header{padding:44px 0 20px;border-top:1px solid var(--hair);margin-top:8px;}
+  .dim-header:first-of-type{border-top:none;margin-top:0;}
+  .dim-tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;}
+  .dim-title{font-family:var(--font-display);font-size:23px;font-weight:800;margin:0 0 6px;}
+  .dim-sub{font-size:13.5px;color:var(--dim);margin:0;line-height:1.5;}
+
+  .q-card{padding:22px 0;border-bottom:1px solid var(--hair);}
+  .q-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px;}
+  .q-idx{font-family:var(--font-mono);font-size:11px;color:var(--ink);background:var(--dim);border-radius:2px;padding:3px 7px;flex-shrink:0;margin-top:3px;min-width:24px;text-align:center;}
+  .q-text{font-size:15.5px;line-height:1.5;color:var(--paper);}
+
+  .likert5{display:flex;gap:8px;flex-wrap:wrap;}
+  .likert5 button{flex:1;min-width:96px;appearance:none;cursor:pointer;background:var(--panel-raised);border:1px solid var(--hair-strong);color:var(--dim);border-radius:3px;padding:11px 6px 9px;font-family:var(--font-mono);display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s ease;}
+  .likert5 button .n{font-size:14px;color:var(--paper);}
+  .likert5 button .t{font-size:9px;text-transform:uppercase;letter-spacing:.01em;color:var(--dim);text-align:center;line-height:1.2;}
+  .likert5 button:hover{border-color:var(--teal);}
+  .likert5 button.active{background:var(--teal);border-color:var(--teal);}
+  .likert5 button.active .n,.likert5 button.active .t{color:var(--ink);}
+
+  .quiz-footer{padding:40px 0 20px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;}
+  .hint{font-size:13px;color:var(--dim);font-family:var(--font-mono);}
+
+  .results-hero{padding:52px 0 6px;}
+  .change-card{background:var(--panel);border:1px solid var(--hair-strong);border-radius:6px;padding:18px 22px;margin:18px 0;}
+  .change-card .k{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);}
+  .change-card .v{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--paper);margin-top:4px;}
+
+  .readout{display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:center;margin:34px 0;padding:26px;background:var(--panel);border:1px solid var(--hair-strong);border-radius:6px;}
+  .gauge-box{display:flex;flex-direction:column;align-items:center;}
+  .gauge-box svg{width:200px;height:120px;}
+  .gauge-score{font-family:var(--font-display);font-size:32px;font-weight:800;margin-top:-38px;}
+  .gauge-max{font-family:var(--font-mono);font-size:11px;color:var(--dim);}
+  .readout-facts .vt{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:8px;}
+  .readout-facts p{margin:0;font-size:14.5px;line-height:1.6;color:var(--paper);}
+
+  .section-head{padding:52px 0 6px;}
+  .section-head .eyebrow{margin-bottom:10px;}
+  .section-head h2{font-family:var(--font-display);font-size:23px;margin:0 0 8px;font-weight:800;}
+  .section-head p{color:var(--dim);font-size:14px;line-height:1.6;margin:0;max-width:580px;}
+
+  .dim-result{background:var(--panel);border:1px solid var(--hair-strong);border-left:4px solid var(--dim);border-radius:6px;padding:22px;margin-top:16px;}
+  .dr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:8px;}
+  .dr-name{font-family:var(--font-display);font-size:17px;font-weight:800;}
+  .dr-level{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;border-radius:10px;padding:3px 10px;white-space:nowrap;}
+  .dr-score{font-family:var(--font-mono);font-size:12.5px;color:var(--dim);margin-bottom:12px;}
+  .bar-track{height:8px;background:var(--panel-raised);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+  .bar-fill{height:100%;border-radius:4px;}
+  .dr-text{font-size:13.5px;line-height:1.55;color:var(--paper);margin-bottom:8px;}
+  .dr-action{font-size:13px;line-height:1.5;color:var(--dim);padding:10px 12px;background:var(--panel-raised);border-radius:4px;}
+  .dr-action b{color:var(--teal);}
+
+  .verdict{margin:8px 0 8px;padding:24px;background:var(--panel);border-left:4px solid var(--teal);border-radius:2px;}
+  .verdict .vt{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:10px;}
+  .verdict p{margin:0;line-height:1.6;font-size:15px;color:var(--paper);}
+
+  .compare-card{background:var(--panel);border:1px solid var(--hair-strong);border-radius:6px;padding:22px;margin-top:16px;}
+  .compare-inputs{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0;}
+  .compare-inputs label{display:flex;flex-direction:column;gap:6px;font-family:var(--font-mono);font-size:10.5px;color:var(--dim);text-transform:uppercase;}
+  .compare-inputs input{background:var(--panel-raised);border:1px solid var(--hair-strong);color:var(--paper);border-radius:3px;padding:9px;font-family:var(--font-mono);font-size:14px;text-align:center;}
+  .gap-table{width:100%;border-collapse:collapse;margin-top:16px;}
+  .gap-table th{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;color:var(--dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--hair-strong);}
+  .gap-table td{padding:9px 10px;border-bottom:1px solid var(--hair);font-size:13px;}
+  .gap-pill{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border-radius:10px;}
+
+  .seg-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13.5px;}
+  .seg-table th{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--hair-strong);}
+  .seg-table td{padding:9px 10px;border-bottom:1px solid var(--hair);}
+  .btn-sm{appearance:none;cursor:pointer;background:transparent;color:var(--teal);border:1px solid var(--hair-strong);border-radius:3px;padding:9px 14px;font-family:var(--font-mono);font-size:12px;transition:all .15s;}
+  .btn-sm:hover{border-color:var(--teal);}
+  .btn-sm.del{color:var(--red);}
+
+  details.advisory{margin-top:34px;padding:16px 18px;background:var(--panel-raised);border:1px solid var(--hair);border-radius:4px;font-size:12px;line-height:1.6;color:var(--dim);}
+  details.advisory summary{cursor:pointer;font-family:var(--font-mono);color:var(--paper);text-transform:uppercase;letter-spacing:.06em;font-size:11px;margin-bottom:8px;}
+
+  .action-row{padding:52px 0 20px;display:flex;justify-content:center;gap:16px;flex-wrap:wrap;}
+
+  @media (max-width:640px){
+    .role-grid{grid-template-columns:1fr;}
+    .readout{grid-template-columns:1fr;}
+    .likert5 button{min-width:calc(33% - 6px);}
+    h1.title{font-size:28px;}
+    .compare-inputs{grid-template-columns:repeat(2,1fr);}
+  }
+
+  @media print{
+    body{background:#fff !important;color:#111 !important;}
+    .topbar,.action-row,.cta,.btn-sm{display:none !important;}
+    .screen{display:none !important;}
+    .screen#screen-results{display:block !important;}
+    .app{max-width:100%;padding:0 12mm;}
+    .readout,.dim-result,.verdict,.compare-card,.change-card,details.advisory{background:#fff !important;border:1px solid #ccc !important;color:#111 !important;}
+    .gauge-score,h1.title,h2,.q-text,.lede,p,.dr-text,.dr-action{color:#111 !important;}
+    .dim-result,.readout,.verdict{page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar" style="display:none;">
+  <div class="topbar-inner">
+    <span class="brand-mark">BARRERAS NEUROLÓGICAS AL CAMBIO</span>
+    <div class="track"><div class="track-fill" id="progressFill"></div></div>
+    <span class="track-count" id="progressCount">0/20</span>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- INTRO -->
+  <section class="screen active" id="screen-intro">
+    <div class="hero">
+      <div class="eyebrow">Modelo de 5 dimensiones neurológicas de resistencia</div>
+      <h1 class="title">Barreras neurológicas<br><em>al cambio</em></h1>
+      <p class="lede">Identifica qué sistemas neurológicos están actuando como barrera frente a un cambio concreto, para diseñar un acompañamiento más preciso — basado en evidencia, no en intuición.</p>
+
+      <div class="instrument">
+        <div class="meta-label">¿Quién responde?</div>
+        <div class="role-grid" id="roleGrid">
+          <button type="button" class="role-card" data-role="self">
+            <div class="rc-name">Autoevaluación</div>
+            <div class="rc-desc">Eres tú quien está viviendo el cambio y quiere entender su propia resistencia.</div>
+          </button>
+          <button type="button" class="role-card" data-role="manager">
+            <div class="rc-name">Evaluación Manager</div>
+            <div class="rc-desc">Eres responsable directo de alguien y quieres valorar su resistencia observando su comportamiento.</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="instrument">
+        <div class="meta-label">Dimensiones evaluadas</div>
+        <div class="dim-grid" id="dimGrid"></div>
+      </div>
+
+      <div class="instrument">
+        <div class="meta-label">Cómo responder</div>
+        <div class="meta-value" id="howToAnswer">Piensa en un cambio concreto que estés viviendo actualmente, no en el cambio en general. No hay respuestas correctas: responde con honestidad, es la única condición para que el resultado sea útil.</div>
+      </div>
+
+      <div class="warnbox">
+        <b>Confidencialidad y uso ético:</b> los resultados de la autoevaluación pertenecen al individuo; un manager no debería acceder a ellos sin consentimiento. Este instrumento no es clínico — orienta conversaciones de acompañamiento, no diagnostica condiciones psicológicas ni sustituye a un profesional de salud mental. El mayor valor se obtiene comparando ambas perspectivas en una conversación estructurada, con curiosidad, no con juicio.
+      </div>
+
+      <div class="cta-row">
+        <button class="cta" id="btnStart" disabled>Selecciona quién responde</button>
+        <span class="cta-note">20 afirmaciones · escala 1–5 · 6-8 minutos</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="screen-quiz">
+    <div class="quiz-head">
+      <div class="eyebrow">Cuestionario</div>
+      <h1 class="title" id="quizTitleMain">5 dimensiones,<br><em>20 afirmaciones</em></h1>
+      <div class="instrument" style="border-top:none;padding-top:0;">
+        <div class="meta-label" id="changeLabel">Cambio evaluado</div>
+        <input type="text" class="text-input" id="changeInput" placeholder="Ej. Transición a la venta de vehículos eléctricos">
+      </div>
+    </div>
+    <div id="quizContent"></div>
+    <div class="quiz-footer">
+      <span class="hint" id="quizHint">Completa el campo "Cambio evaluado" y las 20 afirmaciones para ver tu resultado.</span>
+      <button class="cta" id="btnSubmit" disabled>Ver resultado</button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="screen" id="screen-results">
+    <div class="results-hero">
+      <div class="eyebrow">Resultado</div>
+      <h1 class="title">Mapa de<br><em>resistencia al cambio</em></h1>
+      <p class="lede" id="resultsLede">Puntuación por dimensión y global, con las acciones recomendadas para cada nivel.</p>
+    </div>
+
+    <div class="change-card" id="changeCard"></div>
+
+    <div class="readout">
+      <div class="gauge-box">
+        <svg viewBox="0 0 200 120" id="gaugeSvg"></svg>
+        <div class="gauge-score" id="gaugeScore">0</div>
+        <div class="gauge-max">/ 100 · RESISTENCIA TOTAL</div>
+      </div>
+      <div class="readout-facts">
+        <div class="vt" id="verdictTitle">—</div>
+        <p id="verdictText">—</p>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div class="eyebrow">Detalle por dimensión</div>
+      <h2>Dónde está la mayor resistencia</h2>
+      <p>Ordenado de mayor a menor puntuación, con la acción recomendada para cada nivel.</p>
+    </div>
+    <div id="dimResults"></div>
+
+    <div class="section-head">
+      <div class="eyebrow">Comparar perspectivas</div>
+      <h2 id="compareTitle">Autoevaluación vs. Manager</h2>
+      <p>Si ya tienes los resultados de la otra evaluación (con consentimiento), introduce sus 5 puntuaciones por dimensión para ver la brecha.</p>
+    </div>
+    <div class="compare-card">
+      <div class="compare-inputs" id="compareInputs"></div>
+      <button class="cta ghost" id="btnCompare">Ver brecha</button>
+      <div id="compareResult"></div>
+    </div>
+
+    <div class="section-head">
+      <div class="eyebrow">Seguimiento</div>
+      <h2>Comparar en el tiempo</h2>
+      <p>Guarda esta evaluación en este navegador para repetirla en 30-60 días y ver la evolución, como recomienda la guía de uso.</p>
+    </div>
+    <table class="seg-table" id="segTable">
+      <thead><tr><th>Fecha</th><th>Rol</th><th>Cambio evaluado</th><th>Total</th><th></th></tr></thead>
+      <tbody id="segTableBody"></tbody>
+    </table>
+    <div class="hint" id="segStorageNote" style="display:block;margin-top:10px;"></div>
+    <div style="margin-top:14px;"><button class="btn-sm del" id="btnClearSeg">Borrar historial guardado</button></div>
+
+    <details class="advisory">
+      <summary>Nota metodológica y limitaciones</summary>
+      <p>Este instrumento está basado en el modelo de 5 dimensiones neurológicas de resistencia al cambio, fundamentado en las investigaciones de LeDoux (1996), Arnsten (1998), McEwen (2007), Friston (2010), Hsu et al. (2005), Eisenberger et al. (2003), Graybiel (2008), Baumeister et al. (1998), Kosfeld et al. (2005) y Zak (2017). No es un instrumento clínico: orienta conversaciones de acompañamiento al cambio y prioriza intervenciones. Los resultados deben interpretarse en contexto y con criterio profesional. Escala tipo Likert de 5 puntos; los ítems formulados en sentido positivo (confianza, seguridad psicológica) se invierten automáticamente en el cálculo. Periodicidad sugerida: aplicar al inicio del cambio y repetir a los 30-60 días para medir evolución.</p>
+    </details>
+
+    <div class="action-row">
+      <button class="cta" id="btnSavePdf">Guardar respuestas y descargar PDF</button>
+      <button class="cta ghost" id="btnRestart">Repetir test</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   DATA — extraído de "Test_Barreras_Neurologicas_Cambio_1.xlsx"
+   (hojas Guía de Uso, Autoevaluación, Evaluación Manager)
+   --------------------------------------------------------------- */
+const LIKERT_LABELS = ['Totalmente en desacuerdo','En desacuerdo','Ni de acuerdo ni en desacuerdo','De acuerdo','Totalmente de acuerdo'];
+
+const DIMENSIONS = [
+  { key:'A', name:'Amenaza y Seguridad', desc:'Activación de la respuesta de estrés (amígdala, eje HPA).', refs:'LeDoux (1996) · Arnsten (1998) · McEwen (2007)' },
+  { key:'B', name:'Incertidumbre y Predicción', desc:'Incapacidad del cerebro predictivo para construir un modelo del futuro.', refs:'Friston (2010) · Hsu et al. (2005) · Dayan & Balleine (2002)' },
+  { key:'C', name:'Identidad y Estatus Social', desc:'Amenaza a la identidad profesional y al estatus relacional.', refs:'Eisenberger et al. (2003) · Zink et al. (2008) · Lieberman (2013)' },
+  { key:'D', name:'Inercia Cognitiva y Hábito', desc:'Dominio de los ganglios basales y agotamiento prefrontal.', refs:'Graybiel (2008) · Baumeister et al. (1998) · Lally et al. (2010)' },
+  { key:'E', name:'Confianza y Contexto Relacional', desc:'Déficit de oxitocina, hipervigilancia amigdalar, falta de seguridad psicológica.', refs:'Kosfeld et al. (2005) · Zak (2017) · Edmondson (1999)' },
+];
+
+const ITEMS = {
+  self: {
+    A: [
+      { text:'Cuando me llega un lead para un eléctrico, siento una sensación de incomodidad.', rev:false },
+      { text:'Me preocupa que la entrada del vehículo eléctrico ponga en riesgo mi posición o estabilidad.', rev:false },
+      { text:'Lo reconozco, mi primer impulso es resistirme o evitarlo.', rev:false },
+      { text:'Siento que este cambio me genera más pérdidas que ganancias.', rev:false },
+    ],
+    B: [
+      { text:'No tengo claro a dónde lleva esta moda del vehículo eléctrico, ni cuál es el objetivo final.', rev:false },
+      { text:'La falta de información me genera malestar o bloqueo.', rev:false },
+      { text:'Me cuesta imaginar cómo será mi trabajo con todo este cambio a lo eléctrico.', rev:false },
+      { text:'Prefiero mantener la situación actual aunque no sea perfecta, antes que arriesgarme a algo incierto.', rev:false },
+    ],
+    C: [
+      { text:'Siento que con esta tendencia, puede reducirse mi valor como profesional.', rev:false },
+      { text:'Me molesta no haber sido consultado/a en el diseño de esta nueva forma de vender.', rev:false },
+      { text:'Temo que este cambio afecte negativamente a mi posición dentro del equipo o la organización.', rev:false },
+      { text:'Me resulta difícil adoptar nuevas formas que contradicen mis creencias.', rev:false },
+    ],
+    D: [
+      { text:'Me cuesta abandonar la forma en que venía haciendo las cosas, aunque sé que debo cambiar.', rev:false },
+      { text:'Siento que tengo demasiados cambios a la vez y no puedo con todos.', rev:false },
+      { text:'Cuando intento adoptar la nueva forma de cualificar, acabo volviendo a lo de siempre sin darme cuenta.', rev:false },
+      { text:'En este momento de mi vida, este cambio al eléctrico es especialmente difícil para mí.', rev:false },
+    ],
+    E: [
+      { text:'Confío en las personas que lideran o proponen este cambio.', rev:true },
+      { text:'Siento que puedo expresar mis dudas o miedos sobre el cambio sin ser juzgado/a.', rev:true },
+      { text:'Las tensiones personales con quien propone el cambio dificultan mi disposición a cambiar.', rev:false },
+      { text:'Temo que si cometo errores durante el cambio, se me critique o penalice.', rev:false },
+    ],
+  },
+  manager: {
+    A: [
+      { text:'Cuando se le anuncia el cambio, muestra señales visibles de tensión o alarma.', rev:false },
+      { text:'Expresa preocupación por el impacto del cambio en su estabilidad o continuidad.', rev:false },
+      { text:'Su reacción inicial ante el cambio es de evitación o rechazo.', rev:false },
+      { text:'Percibe el cambio principalmente como una pérdida, no como una oportunidad.', rev:false },
+    ],
+    B: [
+      { text:'No es capaz de explicar con claridad el objetivo o destino del cambio.', rev:false },
+      { text:'La falta de información sobre el cambio le genera malestar o parálisis.', rev:false },
+      { text:'Le cuesta proyectarse en el nuevo escenario y describir cómo será su trabajo.', rev:false },
+      { text:'Prefiere la situación actual, aunque reconoce sus limitaciones, antes que asumir la incertidumbre del cambio.', rev:false },
+    ],
+    C: [
+      { text:'Percibe que el cambio cuestiona o reduce su valor o reconocimiento profesional.', rev:false },
+      { text:'Muestra malestar por no haber sido incluido/a en el proceso de diseño del cambio.', rev:false },
+      { text:'Teme que el cambio altere negativamente su posición o influencia en el equipo.', rev:false },
+      { text:'Expresa preocupación por el impacto del cambio en la dinámica o cohesión del equipo.', rev:false },
+    ],
+    D: [
+      { text:'Le cuesta abandonar sus rutinas habituales, incluso cuando reconoce la necesidad del cambio.', rev:false },
+      { text:'Está gestionando simultáneamente demasiados cambios y muestra señales de saturación.', rev:false },
+      { text:'Tiende a recaer en los comportamientos anteriores sin ser consciente de ello.', rev:false },
+      { text:'El momento en que se le solicita el cambio es especialmente desfavorable para él/ella.', rev:false },
+    ],
+    E: [
+      { text:'Muestra confianza en las personas que lideran o proponen el cambio.', rev:true },
+      { text:'Se siente seguro/a para expresar sus dudas o discrepancias sobre el cambio sin temor.', rev:true },
+      { text:'Las tensiones relacionales con el agente de cambio dificultan su disposición a adaptarse.', rev:false },
+      { text:'Teme que los errores cometidos durante el proceso de cambio sean penalizados o criticados.', rev:false },
+    ],
+  }
+};
+
+const DIM_LEVELS = [
+  { max:8,  label:'Baja resistencia',        color:'#4FB8A6', meaning:'Esta dimensión no representa una barrera significativa en este momento.', action:'Reforzar y mantener. Puede ser un recurso para el cambio.' },
+  { max:12, label:'Resistencia moderada',     color:'#E0A857', meaning:'Existen señales de resistencia que requieren atención y acompañamiento.', action:'Intervención preventiva: comunicación, participación, apoyo.' },
+  { max:16, label:'Resistencia alta',         color:'#E8735F', meaning:'Esta dimensión está actuando como barrera activa al cambio.', action:'Intervención prioritaria: trabajo emocional, rediseño del proceso.' },
+  { max:20, label:'Resistencia crítica',      color:'#D9524A', meaning:'Bloqueo neurológico severo. El cambio no avanzará sin intervención directa.', action:'Parar, diagnosticar y rediseñar la estrategia de cambio para esta persona.' },
+];
+const TOTAL_LEVELS = [
+  { max:39,  label:'Perfil adaptativo',        color:'#4FB8A6', meaning:'Baja resistencia global. La persona tiene recursos neurológicos y relacionales para afrontar el cambio.', action:'Acompañar, no presionar. Puede ser agente de cambio para otros.' },
+  { max:59,  label:'Resistencia moderada',     color:'#E0A857', meaning:'Resistencia presente en algunas dimensiones. Requiere atención diferenciada.', action:'Identificar las dimensiones con mayor puntuación y actuar sobre ellas.' },
+  { max:79,  label:'Resistencia significativa',color:'#E8735F', meaning:'Múltiples barreras activas. El cambio encontrará obstáculos importantes.', action:'Plan de acompañamiento individualizado. Priorizar confianza y seguridad.' },
+  { max:100, label:'Resistencia crítica',      color:'#D9524A', meaning:'Bloqueo global. La persona no está en condiciones de afrontar el cambio sin intervención.', action:'Intervención urgente. Considerar ritmo, carga y contexto relacional.' },
+];
+function levelFor(score, table){ return table.find(l=>score<=l.max) || table[table.length-1]; }
+
+let role = null; // 'self' | 'manager'
+const answers = {}; // dimKey -> [v,v,v,v]
+let changeText = '';
+let results = null;
+
+/* ---------------------------------------------------------------
+   PERSISTENCIA LOCAL
+   --------------------------------------------------------------- */
+const STORAGE_KEY = 'barreras_cambio_historial_v1';
+const isFileProtocol = (window.location.protocol === 'file:');
+let storageAvailable = true;
+(function testStorage(){
+  try{ const k='__bc_test__'; window.localStorage.setItem(k,'1'); storageAvailable = window.localStorage.getItem(k)==='1'; window.localStorage.removeItem(k); }
+  catch(e){ storageAvailable = false; }
+})();
+function loadHist(){ if(!storageAvailable) return []; try{ const raw = window.localStorage.getItem(STORAGE_KEY); return raw?JSON.parse(raw):[]; }catch(e){ storageAvailable=false; return []; } }
+function saveHist(){ if(!storageAvailable) return; try{ window.localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); }catch(e){ storageAvailable=false; } }
+let history = loadHist();
+
+/* ---------------------------------------------------------------
+   NAVIGATION
+   --------------------------------------------------------------- */
+const screens = { intro: document.getElementById('screen-intro'), quiz: document.getElementById('screen-quiz'), results: document.getElementById('screen-results') };
+function showScreen(name){
+  Object.values(screens).forEach(s=>s.classList.remove('active'));
+  screens[name].classList.add('active');
+  document.getElementById('topbar').style.display = (name==='quiz') ? 'block' : 'none';
+  window.scrollTo({top:0, behavior:'auto'});
+}
+
+(function initDimGrid(){
+  document.getElementById('dimGrid').innerHTML = DIMENSIONS.map(d=>`
+    <div class="dim-mini">
+      <div class="dm-name">${d.key} — ${d.name}</div>
+      <div class="dm-desc">${d.desc}</div>
+      <div class="dm-refs">${d.refs}</div>
+    </div>`).join('');
+})();
+
+document.getElementById('roleGrid').addEventListener('click',(e)=>{
+  const btn = e.target.closest('.role-card'); if(!btn) return;
+  role = btn.dataset.role;
+  document.querySelectorAll('.role-card').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStart').textContent = 'Iniciar test';
+  document.getElementById('howToAnswer').textContent = role==='self'
+    ? 'Piensa en un cambio concreto que estés viviendo actualmente, no en el cambio en general. No hay respuestas correctas: responde con honestidad, es la única condición para que el resultado sea útil.'
+    : 'Basa tu evaluación en comportamientos observables de tu colaborador/a, no en suposiciones. Piensa en un cambio concreto que esté viviendo actualmente.';
+});
+
+document.getElementById('btnStart').addEventListener('click', ()=>{ buildQuiz(); showScreen('quiz'); });
+document.getElementById('btnRestart').addEventListener('click', ()=>{
+  DIMENSIONS.forEach(d=> answers[d.key] = [null,null,null,null]);
+  changeText = '';
+  showScreen('intro');
+});
+
+/* ---------------------------------------------------------------
+   QUIZ BUILD
+   --------------------------------------------------------------- */
+function buildQuiz(){
+  DIMENSIONS.forEach(d=> answers[d.key] = [null,null,null,null]);
+  document.getElementById('quizTitleMain').innerHTML = role==='self'
+    ? '5 dimensiones,<br><em>20 afirmaciones</em>'
+    : 'Evaluación del<br><em>colaborador</em>';
+  document.getElementById('changeLabel').textContent = 'Cambio evaluado';
+  document.getElementById('changeInput').value = changeText;
+
+  const root = document.getElementById('quizContent');
+  root.innerHTML = '';
+  DIMENSIONS.forEach(dim=>{
+    const items = ITEMS[role][dim.key];
+    const block = document.createElement('div');
+    block.innerHTML = `
+      <div class="dim-header">
+        <div class="dim-tag">Dimensión ${dim.key}</div>
+        <div class="dim-title">${dim.name}</div>
+        <p class="dim-sub">${dim.desc}</p>
+      </div>
+    `;
+    items.forEach((item, i)=>{
+      const card = document.createElement('div');
+      card.className = 'q-card';
+      card.innerHTML = `
+        <div class="q-top">
+          <span class="q-idx">${dim.key}${i+1}</span>
+          <span class="q-text">${item.text}</span>
+        </div>
+        <div class="likert5" data-dim="${dim.key}" data-idx="${i}">
+          ${[1,2,3,4,5].map(v=>`<button type="button" data-val="${v}"><span class="n">${v}</span><span class="t">${LIKERT_LABELS[v-1]}</span></button>`).join('')}
+        </div>
+      `;
+      block.appendChild(card);
+    });
+    root.appendChild(block);
+  });
+
+  root.querySelectorAll('.likert5').forEach(group=>{
+    group.addEventListener('click',(e)=>{
+      const btn = e.target.closest('button[data-val]'); if(!btn) return;
+      const dim = group.dataset.dim, idx = parseInt(group.dataset.idx,10);
+      answers[dim][idx] = parseInt(btn.dataset.val,10);
+      group.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      updateProgress();
+    });
+  });
+  document.getElementById('changeInput').addEventListener('input', updateProgress);
+  updateProgress();
+}
+
+function updateProgress(){
+  changeText = document.getElementById('changeInput').value;
+  let n = 0;
+  DIMENSIONS.forEach(d=> answers[d.key].forEach(v=>{ if(v!==null) n++; }));
+  const total = 20;
+  document.getElementById('progressFill').style.width = (n/total*100)+'%';
+  document.getElementById('progressCount').textContent = n+'/'+total;
+  const complete = n===total && changeText.trim().length>0;
+  document.getElementById('btnSubmit').disabled = !complete;
+  document.getElementById('quizHint').textContent = complete
+    ? 'Todo listo. Puedes ver tu resultado.'
+    : (changeText.trim().length===0 ? 'Indica qué cambio estás evaluando para continuar.' : `Responde las 20 afirmaciones para ver tu resultado (${n}/${total}).`);
+}
+document.getElementById('btnSubmit').addEventListener('click', ()=>{ showScreen('results'); computeAndRender(); });
+
+/* ---------------------------------------------------------------
+   SCORING
+   --------------------------------------------------------------- */
+function computeResults(){
+  const perDim = DIMENSIONS.map(dim=>{
+    const items = ITEMS[role][dim.key];
+    const vals = answers[dim.key];
+    const score = vals.reduce((s,v,i)=> s + (items[i].rev ? (6-v) : v), 0);
+    return { ...dim, score };
+  });
+  const total = perDim.reduce((s,d)=>s+d.score,0);
+  return { perDim, total };
+}
+
+/* ---------------------------------------------------------------
+   RESULTS RENDER
+   --------------------------------------------------------------- */
+function computeAndRender(){
+  results = computeResults();
+  const gl = levelFor(results.total, TOTAL_LEVELS);
+
+  document.getElementById('gaugeScore').textContent = results.total;
+  document.getElementById('verdictTitle').textContent = gl.label.toUpperCase();
+  document.getElementById('verdictText').textContent = gl.meaning + ' ' + gl.action;
+
+  document.getElementById('changeCard').innerHTML = `
+    <span class="k">Cambio evaluado · ${role==='self' ? 'Autoevaluación' : 'Evaluación manager'}</span>
+    <div class="v">${changeText || '(sin especificar)'}</div>
+  `;
+
+  try{ drawGauge(results.total, gl.color); }catch(e){ console.error('gauge', e); }
+  try{ renderDimResults(); }catch(e){ console.error('dims', e); }
+  try{ renderCompare(); }catch(e){ console.error('compare', e); }
+
+  try{
+    const now = new Date();
+    const stamp = now.toISOString().slice(0,16).replace('T',' ');
+    history.push({ date:stamp, role, change: changeText || '(sin especificar)', total: results.total });
+    if(history.length>8) history.shift();
+    saveHist();
+    renderHistory();
+  }catch(e){ console.error('historial', e); }
+}
+
+function drawGauge(total, color){
+  const svg = document.getElementById('gaugeSvg');
+  const cx=100, cy=110, r=90;
+  function pt(deg){ const rad=(deg-180)*Math.PI/180; return [cx+r*Math.cos(rad), cy+r*Math.sin(rad)]; }
+  function arcPath(a0,a1){ const [x0,y0]=pt(a0),[x1,y1]=pt(a1); const large=(a1-a0)>180?1:0; return `M${x0},${y0} A${r},${r} 0 ${large} 1 ${x1},${y1}`; }
+  const bounds=[0,39,59,79,100].map(v=>v/100*180);
+  const colors=['#4FB8A6','#E0A857','#E8735F','#D9524A'];
+  let arcs='';
+  for(let i=0;i<4;i++) arcs += `<path d="${arcPath(bounds[i],bounds[i+1])}" stroke="${colors[i]}" stroke-width="14" fill="none" stroke-linecap="round"/>`;
+  const [nx,ny] = pt((total/100)*180);
+  svg.innerHTML = arcs + `<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="var(--paper)" stroke-width="2.5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="5" fill="var(--paper)"/>`;
+}
+
+function renderDimResults(){
+  const root = document.getElementById('dimResults');
+  root.innerHTML = '';
+  const sorted = [...results.perDim].sort((a,b)=>b.score-a.score);
+  sorted.forEach(d=>{
+    const lvl = levelFor(d.score, DIM_LEVELS);
+    const pct = (d.score-4)/16*100;
+    const card = document.createElement('div');
+    card.className = 'dim-result';
+    card.style.borderLeftColor = lvl.color;
+    card.innerHTML = `
+      <div class="dr-top">
+        <span class="dr-name">${d.key} — ${d.name}</span>
+        <span class="dr-level" style="background:${lvl.color}22;color:${lvl.color}">${lvl.label}</span>
+      </div>
+      <div class="dr-score">Puntuación: ${d.score} / 20</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${lvl.color}"></div></div>
+      <div class="dr-text">${lvl.meaning}</div>
+      <div class="dr-action"><b>Acción recomendada:</b> ${lvl.action}</div>
+    `;
+    root.appendChild(card);
+  });
+}
+
+function renderCompare(){
+  document.getElementById('compareTitle').textContent = role==='self'
+    ? 'Tu autoevaluación vs. la valoración de tu manager'
+    : 'Tu valoración vs. la autoevaluación del colaborador';
+  const root = document.getElementById('compareInputs');
+  root.innerHTML = DIMENSIONS.map(d=>`
+    <label>${d.key}
+      <input type="number" min="4" max="20" data-dim="${d.key}" placeholder="4-20">
+    </label>
+  `).join('');
+  document.getElementById('compareResult').innerHTML = '';
+}
+
+document.getElementById('btnCompare').addEventListener('click', ()=>{
+  const inputs = document.querySelectorAll('#compareInputs input');
+  const otherScores = {};
+  let valid = true;
+  inputs.forEach(inp=>{
+    const v = parseInt(inp.value,10);
+    if(isNaN(v) || v<4 || v>20){ valid = false; }
+    otherScores[inp.dataset.dim] = v;
+  });
+  if(!valid){ alert('Introduce las 5 puntuaciones (rango 4-20) de la otra evaluación.'); return; }
+
+  const rows = DIMENSIONS.map(d=>{
+    const own = results.perDim.find(p=>p.key===d.key).score;
+    const other = otherScores[d.key];
+    // Convención: brecha = Manager − Autoevaluación
+    const gap = role==='self' ? (other - own) : (own - other);
+    let pillColor, pillLabel;
+    if(Math.abs(gap)<=5){ pillColor='#4FB8A6'; pillLabel='Alineados'; }
+    else if(gap>5){ pillColor='#E0A857'; pillLabel='Manager valora más alto'; }
+    else { pillColor='#E8735F'; pillLabel='Manager valora más bajo'; }
+    return `<tr>
+      <td>${d.key} — ${d.name}</td>
+      <td>${role==='self'?own:other}</td>
+      <td>${role==='self'?other:own}</td>
+      <td>${gap>0?'+':''}${gap}</td>
+      <td><span class="gap-pill" style="background:${pillColor}22;color:${pillColor}">${pillLabel}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('compareResult').innerHTML = `
+    <table class="gap-table">
+      <thead><tr><th>Dimensión</th><th>Autoevaluación</th><th>Manager</th><th>Brecha</th><th>Interpretación</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p class="hint" style="margin-top:12px;">Brecha entre -5 y +5: alineados. Brecha &gt; 5 (manager valora más alto): posible falta de conciencia o de expresión segura por parte del colaborador. Brecha &lt; -5 (manager valora más bajo): el colaborador percibe más resistencia de la que el manager observa — puede no estar siendo visible.</p>
+  `;
+});
+
+/* ---------------------------------------------------------------
+   HISTORIAL
+   --------------------------------------------------------------- */
+document.getElementById('btnClearSeg').addEventListener('click', ()=>{
+  if(!confirm('¿Borrar todo el historial guardado en este navegador? Esta acción no se puede deshacer.')) return;
+  history = [];
+  saveHist();
+  renderHistory();
+});
+function renderHistory(){
+  const body = document.getElementById('segTableBody');
+  const note = document.getElementById('segStorageNote');
+  if(note){
+    if(storageAvailable){ note.textContent = 'Este historial se guarda solo en este navegador — nadie más puede verlo.'; note.style.color=''; }
+    else if(isFileProtocol){ note.innerHTML = '⚠️ Este navegador no está guardando datos porque abriste el archivo directamente (file://). Aloja este archivo en un servidor (GitHub Pages, Netlify, tu intranet) y ábrelo con http:// o https:// para que el guardado funcione de forma fiable.'; note.style.color='var(--amber)'; }
+    else{ note.innerHTML = '⚠️ Este navegador no permite guardar datos localmente (modo privado o configuración del navegador). El historial solo durará esta sesión.'; note.style.color='var(--amber)'; }
+  }
+  body.innerHTML = '';
+  history.forEach((h,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${h.date}</td><td>${h.role==='self'?'Autoevaluación':'Manager'}</td><td>${h.change}</td><td>${h.total}/100</td><td><button class="btn-sm del" data-i="${i}">Eliminar</button></td>`;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('.del').forEach(b=>b.addEventListener('click',(e)=>{
+    const i = parseInt(e.target.dataset.i,10);
+    history.splice(i,1); saveHist(); renderHistory();
+  }));
+}
+
+/* ---------------------------------------------------------------
+   SAVE + PDF
+   --------------------------------------------------------------- */
+document.getElementById('btnSavePdf').addEventListener('click', ()=>{ window.print(); });
+</script>
+</body>
+</html>
